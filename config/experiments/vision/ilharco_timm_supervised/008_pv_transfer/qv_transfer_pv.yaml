@@ -1,0 +1,70 @@
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  sweep:
+    dir: logs/config/experiments/vision/ilharco_timm_supervised/008_pv_transfer/qv_transfer_pv
+    subdir: ${model_name}/seed=${target.seed}/pv=bits=${pv.bits}_gran=${pv.granularity}_delta=${pv.delta_decay}_tau=${pv.max_code_change_per_step}/ptq=bits=${ptq.bits}_gran=${ptq.granularity}
+
+model_name: ???
+batch_size: ???
+eval_split: ???        # "val" or "test"
+limit_num_batches: null
+log_to_file: false
+skip_existing: true
+
+# Shared training hyperparameters used to locate ALL THREE checkpoints
+# (fp_source, pv_source, fp_target). Assumes source and target were trained
+# with identical optim hp; split into source.optim / target.optim later if needed.
+lr: ???
+wd: ???
+ls: ???
+wl: ???
+max_grad_norm: ???
+
+gpu: ???
+
+source:
+  dataset_names: ???       # list of source dataset names to iterate over internally
+  seed: ???
+  # Training-budget multiplier for this role's checkpoints.
+  epoch_mult: 1.0
+  limit_num_epochs: null   # null -> DATASET_NAME_TO_EPOCHS[dataset_name]
+
+target:
+  dataset_names: ???
+  seed: ???
+  # Training-budget multiplier for this role's checkpoints.
+  epoch_mult: 1.0
+  limit_num_epochs: null
+
+# Used to LOCATE the PV source and target checkpoints AND recorded in results
+# JSON. Must match finetune_pv.py exactly.
+pv:
+  bits: ???
+  granularity: ???
+  skip_modules: ???                # e.g. [head]
+  delta_decay: ???
+  max_code_change_per_step: ???
+  trust_ratio: null
+  p_every: 1
+  temperature: 0.0
+
+qv:
+  alphas: ???   # list, e.g. [0.0, 1.0]; alpha=0 is evaluated on self-pairs only
+
+  # Which donor weights the QV is built from.
+  #   latent  -- the straight-through buffer from pv_state_epoch_N.pt. The exact
+  #              analogue of what a QAT checkpoint stores, so the QV is directly
+  #              comparable to 001's. THIS IS THE EXPERIMENT.
+  #   settled -- the saved q*s weights. Dominated by quantization rounding error
+  #              (measured: 24x the QAT QV's norm, cosine 0.035 with it), so it
+  #              answers a different question. Ablation only.
+  weights: latent
+
+# FINAL eval PTQ of the patched model: plain round-to-nearest, identical to
+# 001_qat_transfer. Keeping the quantizer fixed is what makes the difference
+# between this phase and 001 attributable to the finetuner alone.
+ptq:
+  skip_modules: ???
+  bits: ???
+  granularity: ???

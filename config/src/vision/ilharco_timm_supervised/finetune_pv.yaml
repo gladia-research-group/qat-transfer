@@ -1,0 +1,42 @@
+model_name: ???
+dataset_name: ???
+seed: ???
+gpu: ???
+batch_size: 128
+lr: 1e-5
+wd: 0.1
+ls: 0.0
+wl: 500           # warmup length (steps)
+max_grad_norm: 1.0
+# Training-budget multiplier on this dataset's entry in DATASET_NAME_TO_EPOCHS.
+# 1.0 is the schedule this repo has always run. It is written explicitly into
+# every path as `mult=1`, never elided.
+epoch_mult: 1.0
+
+limit_num_batches: null
+limit_num_epochs: null
+
+# PV-Tuning. P = the integer codes, V = the straight-through buffer and every
+# non-quantized parameter (the scale is derived, not learned).
+#
+# delta_decay=0.0, max_code_change_per_step=1.0, trust_ratio=null, p_every=1,
+# temperature=0.0 is bitwise identical to finetune_qat.py — the control
+# condition, and the setting to reach for when reproducing the QAT column.
+pv:
+  bits: ???                        # int, required
+  granularity: ???                 # "tensor" or "channel", required
+  skip_modules: ???                # list[str], required (e.g. [head])
+  delta_decay: ???                 # float in [0, 1], required
+  max_code_change_per_step: ???    # float in (0, 1], required
+  trust_ratio: null                # float > 0, or null to disable
+  p_every: 1                       # P-step every N optimizer steps
+  temperature: 0.0                 # >0 samples codes instead of taking top-k
+
+hydra:
+  searchpath:
+    - file://config
+  run:
+    dir: logs/src/vision/ilharco_timm_supervised/finetune_pv/${sanitize_timm:${model_name}}/${dataset_name}/mult=${epoch_mult}/seed=${seed}
+  sweep:
+    dir: logs/src/vision/ilharco_timm_supervised/finetune_pv
+    subdir: ${sanitize_timm:${model_name}}/${dataset_name}/mult=${epoch_mult}/seed=${seed}

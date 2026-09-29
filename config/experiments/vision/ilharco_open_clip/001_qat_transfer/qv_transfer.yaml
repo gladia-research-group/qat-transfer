@@ -1,0 +1,57 @@
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  sweep:
+    dir: logs/config/experiments/vision/ilharco_open_clip/001_qat_transfer/qv_transfer
+    subdir: ${model_name}__${pretrained}/seed=${source.seed}_${target.seed}/qat=bits=${qat.bits}_gran=${qat.granularity}/ptq=bits=${ptq.bits}_gran=${ptq.granularity}/qv=alpha=${qv.alpha}
+
+model_name: ???
+pretrained: ???
+batch_size: ???
+eval_split: ???        # "val" or "test"
+limit_num_batches: null
+log_to_file: false
+
+# Shared training hyperparameters used to locate ALL THREE checkpoints
+# (fp_source, qat_source, fp_target). Assumes source and target were trained
+# with identical optim hp; split into source.optim / target.optim later if needed.
+lr: ???
+wd: ???
+ls: ???
+wl: ???
+max_grad_norm: ???
+
+gpu: ???
+
+source:
+  dataset_names: ???       # list of source dataset names to iterate over internally
+  seed: ???
+  # Training-budget multiplier for this role's checkpoints.
+  epoch_mult: 1.0
+  limit_num_epochs: null   # null -> DATASET_NAME_TO_EPOCHS[dataset_name]
+
+target:
+  dataset_names: ???       # list of target dataset names to iterate over internally
+  seed: ???
+  # Training-budget multiplier for this role's checkpoints.
+  epoch_mult: 1.0
+  limit_num_epochs: null   # null -> DATASET_NAME_TO_EPOCHS[dataset_name]
+
+# Used to LOCATE the QAT source checkpoint AND recorded in results JSON.
+qat:
+  bits: ???          # int
+  granularity: ???   # "tensor" or "channel"
+  skip_modules: ???  # list of child-module attribute names that were skipped during QAT training, e.g. [classification_head]
+
+qv:
+  alpha: ???         # float scaling coefficient, or "best" to read from best_alpha.json on disk
+  best_metric: null  # metric key for best_alpha.json lookup (null = auto-detect sole key)
+
+# FINAL eval PTQ of the patched model.
+ptq:
+  skip_modules: ???  # list of child-module attribute names to exclude from PTQ, e.g. [classification_head]
+  bits: ???          # int
+  granularity: ???   # "tensor" or "channel"
+
+
+

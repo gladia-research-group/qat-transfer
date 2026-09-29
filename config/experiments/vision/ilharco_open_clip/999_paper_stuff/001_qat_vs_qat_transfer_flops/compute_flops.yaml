@@ -1,0 +1,31 @@
+model_name: ???
+pretrained: ???
+dataset_name: ???
+seed: ???
+gpu: ???
+batch_size: 128
+lr: 1e-5
+wd: 0.1
+ls: 0.0
+wl: 500
+max_grad_norm: 1.0
+head_cache_dir: ${oc.env:HEAD_CACHE_DIR,heads}
+limit_num_batches: null
+limit_num_epochs: null
+num_warmup_steps: 10
+run_full_training: true
+qv_alpha: 1.0
+
+qat:
+  bits: ???
+  granularity: ???
+  skip_modules: ???
+
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  run:
+    dir: logs/experiments/vision/ilharco_open_clip/999_paper_stuff/001_qat_vs_qat_transfer_flops/${sanitize_open_clip:${model_name},${pretrained}}/${dataset_name}/seed=${seed}
+  sweep:
+    dir: logs/experiments/vision/ilharco_open_clip/999_paper_stuff/001_qat_vs_qat_transfer_flops
+    subdir: ${sanitize_open_clip:${model_name},${pretrained}}/${dataset_name}/seed=${seed}

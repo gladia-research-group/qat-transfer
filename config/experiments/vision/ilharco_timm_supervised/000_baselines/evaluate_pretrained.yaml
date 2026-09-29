@@ -1,0 +1,26 @@
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  sweep:
+    dir: logs/config/experiments/vision/ilharco_timm_supervised/000_baselines/evaluate_pretrained
+    subdir: ${model_name}/${dataset_name}/seed=${seed}
+
+model_name: ???
+dataset_name: ???
+batch_size: ???
+seed: ???
+gpu: ???
+limit_num_batches: null
+log_to_file: false
+
+# Training hyperparameters used to locate the finetuned head checkpoint.
+lr: ???
+wd: ???
+ls: ???
+wl: ???
+max_grad_norm: ???
+# Training-budget multiplier, matching the finetune run being evaluated.
+# 1.0 is the schedule this repo has always run.
+epoch_mult: 1.0
+
+limit_num_epochs: null

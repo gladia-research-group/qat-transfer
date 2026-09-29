@@ -1,0 +1,34 @@
+defaults:
+  - override hydra/job_logging: none
+  - _self_
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+
+evaluation_root: evaluations
+
+family: ilharco_timm_supervised
+model_name: vit_base_patch16_224.orig_in21k
+seed: 2038
+optim: adamw
+lr: 1.0e-5
+wd: 0.1
+ls: 0.0
+wl: 500
+max_grad_norm: 1.0
+batch_size: 128
+
+qat_bits: 3
+qat_granularity: channel
+qat_skip_modules: [head]
+ptq_skip_modules: [head]
+
+checkpoint_kind: classifier
+epoch_policy: dataset_final
+vector_scope: quantized_linear_weight
+module_selector: apply_ptq_linear_v1
+accumulation_dtype: float64
+
+use_wandb: false

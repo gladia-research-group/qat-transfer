@@ -1,0 +1,36 @@
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  sweep:
+    dir: logs/config/experiments/text/ilharco_automodelforsequenceclassification/000_baselines/evaluate_pretrained_ptq
+    subdir: ${sanitize_hf:${model_name}}/${dataset_name}/seed=${seed}
+
+model_name: ???
+dataset_name: ???
+batch_size: ???
+max_length: ???
+seed: ???
+gpu: ???
+limit_num_batches: null
+log_to_file: false
+
+# Training hyperparameters used to locate the QAT head checkpoint.
+lr: ???
+wd: ???
+ls: ???
+max_grad_norm: ???
+# Training-budget multiplier, matching the finetune run being evaluated.
+# 1.0 is the schedule this repo has always run.
+epoch_mult: 1.0
+
+limit_num_epochs: null
+
+qat:
+  skip_modules: ???  # list of child-module names skipped during QAT, e.g. [classifier]
+  bits: ???          # int
+  granularity: ???   # "tensor" or "channel"
+
+ptq:
+  skip_modules: ???  # list of child-module names to exclude from PTQ, e.g. [classifier]
+  bits: ???          # int
+  granularity: ???   # "tensor" or "channel"

@@ -1,0 +1,32 @@
+# Hydra Submitit SLURM launcher config for qat-transfer.
+#
+# Cluster-specific values are read from the environment (see .env.example):
+#   SBATCH_PARTITION, SBATCH_ACCOUNT   -- required when using this launcher
+#
+# Submit from the repo root: PYTHONPATH is derived from $PWD.
+#
+# Usage:
+#   - Run locally (default, no SLURM):
+#       uv run --active python code/src/vision/ilharco_timm_supervised/finetune_fp.py model_name=vit_base_patch16_224.orig_in21k dataset_name=CIFAR10 seed=2038 gpu=0
+#
+#   - Submit a single run to SLURM via submitit:
+#       uv run --active python code/src/vision/ilharco_timm_supervised/finetune_fp.py -m hydra/launcher=submitit_slurm model_name=vit_base_patch16_224.orig_in21k dataset_name=CIFAR10 seed=2038 gpu=0
+#
+#   - Multirun sweep (each combination = separate SLURM job):
+#       uv run --active python code/src/vision/ilharco_timm_supervised/finetune_fp.py -m hydra/launcher=submitit_slurm model_name=vit_base_patch16_224.orig_in21k dataset_name=CIFAR10,DTD seed=2038 gpu=0
+#
+# Without "-m hydra/launcher=submitit_slurm", the script runs in the current
+# process (login node / local machine).
+
+_target_: hydra_plugins.hydra_submitit_launcher.submitit_launcher.SlurmLauncher
+partition: ${oc.env:SBATCH_PARTITION}
+account: ${oc.env:SBATCH_ACCOUNT}
+gpus_per_node: 1
+cpus_per_task: 8
+mem_gb: 128
+timeout_min: 1440
+nodes: 1
+stderr_to_stdout: true
+submitit_folder: ${hydra.sweep.dir}/.submitit/%j
+setup:
+  - export PYTHONPATH="${oc.env:PWD}/code:$PYTHONPATH"

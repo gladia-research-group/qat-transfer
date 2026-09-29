@@ -1,0 +1,58 @@
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  sweep:
+    dir: logs/config/experiments/vision/ilharco_timm_supervised/005_qat_transfer_gptq/qv_transfer_gptq
+    subdir: ${model_name}/seed=${target.seed}/qat=bits=${qat.bits}_gran=${qat.granularity}/gptq=bits=${gptq.bits}_gran=${gptq.granularity}_ncal=${gptq.num_calib_batches}
+
+model_name: ???
+batch_size: ???
+eval_split: ???        # "val" or "test"
+limit_num_batches: null
+log_to_file: false
+skip_existing: true    # skip a (pair, alpha) cell whose eval_results.json already exists (resume guard)
+
+# Shared training hyperparameters used to locate ALL THREE checkpoints
+# (fp_source, qat_source, fp_target). Assumes source and target were trained
+# with identical optim hp; split into source.optim / target.optim later if needed.
+lr: ???
+wd: ???
+ls: ???
+wl: ???
+max_grad_norm: ???
+
+gpu: ???
+
+source:
+  dataset_names: ???       # list of source dataset names to iterate over internally
+  seed: ???
+  # Training-budget multiplier for this role's checkpoints.
+  epoch_mult: 1.0
+  limit_num_epochs: null   # null -> DATASET_NAME_TO_EPOCHS[dataset_name]
+
+target:
+  dataset_names: ???       # list of target dataset names to iterate over internally
+  seed: ???
+  # Training-budget multiplier for this role's checkpoints.
+  epoch_mult: 1.0
+  limit_num_epochs: null   # null -> DATASET_NAME_TO_EPOCHS[dataset_name]
+
+# Used to LOCATE the QAT source checkpoint AND recorded in results JSON.
+qat:
+  bits: ???          # int
+  granularity: ???   # "tensor" or "channel"
+  skip_modules: ???  # list of child-module attribute names that were skipped during QAT training, e.g. [head]
+
+qv:
+  alphas: ???        # list of float scaling coefficients, e.g. [0.0, 1.0]; alpha=0 runs on the self-pair only (it is the GPTQ(FP) receiver baseline, donor-independent)
+
+# FINAL eval GPTQ of the patched model (replaces 001's RTN ptq group).
+# Quantization knobs are mandatory; calibration knobs may default.
+gptq:
+  skip_modules: ???        # list of child-module attribute names to exclude from GPTQ, e.g. [head]
+  bits: ???                # int
+  granularity: ???         # "tensor" or "channel"
+  num_calib_batches: 4     # batches from the RECEIVER's train split, materialized once per target
+  percdamp: 0.01           # Hessian damping as a fraction of mean(diag(H))
+  actorder: false          # official --act-order (quantize columns by decreasing diag(H))
+  block_size: 128          # solver batching; result-invariant, NOT in the eval path fragment

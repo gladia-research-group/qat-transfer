@@ -1,0 +1,15 @@
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  sweep:
+    dir: logs/config/experiments/vision/ilharco_open_clip/000_baselines/evaluate_pretrained
+    subdir: ${model_name}__${pretrained}/${dataset_name}/seed=${seed}
+
+model_name: ???
+pretrained: ???
+dataset_name: ???
+batch_size: ???
+seed: ???
+gpu: ???
+limit_num_batches: null
+log_to_file: false

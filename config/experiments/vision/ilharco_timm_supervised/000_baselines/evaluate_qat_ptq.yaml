@@ -1,0 +1,34 @@
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  sweep:
+    dir: logs/config/experiments/vision/ilharco_timm_supervised/000_baselines/evaluate_qat_ptq
+    subdir: ${model_name}/${dataset_name}/optim=adamw_lr=${lr}_wd=${wd}_ls=${ls}_wl=${wl}_mgn=${max_grad_norm}_bs=${batch_size}/seed=${seed}
+
+model_name: ???
+dataset_name: ???
+batch_size: ???
+lr: ???
+wd: ???
+ls: ???
+wl: ???
+max_grad_norm: ???
+seed: ???
+gpu: ???
+# Training-budget multiplier, matching the finetune run being evaluated.
+# 1.0 is the schedule this repo has always run.
+epoch_mult: 1.0
+
+limit_num_epochs: null
+limit_num_batches: null
+log_to_file: false
+
+qat:
+  skip_modules: ???  # list of child-module attribute names skipped during QAT training, e.g. [head]
+  bits: ???          # int, must match training
+  granularity: ???   # "tensor" or "channel", must match training
+
+ptq:
+  skip_modules: ???  # list of child-module attribute names to exclude from PTQ, e.g. [head]
+  bits: ???          # int
+  granularity: ???   # "tensor" or "channel"

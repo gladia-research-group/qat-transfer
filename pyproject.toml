@@ -1,0 +1,29 @@
+[project]
+name = "qat-transfer"
+version = "0.1.0"
+description = "Quantization vectors: transferring quantization-aware training across tasks by task arithmetic"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "datasets>=2.19.1",
+    "dotenv>=0.9.9",
+    "hydra-submitit-launcher>=1.2.0",
+    "kaleido>=1.2.0",
+    "matplotlib>=3.9.4",
+    "numpy>=2.0.2",
+    "open-clip-torch>=3.3.0",
+    "pillow>=11.3.0",
+    "plotly>=6.7.0",
+    "rich>=14.3.3",
+    "sentence-transformers>=5.1.2",
+    "tabulate>=0.9.0",
+    "timm>=1.0.26",
+    "torch>=2.8.0",
+    "torchvision>=0.23.0",
+    "tqdm>=4.66.5",
+    "transformers>=4.57.6",
+]
+
+[[tool.uv.index]]
+url = "https://download.pytorch.org/whl/cu126"

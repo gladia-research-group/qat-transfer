@@ -1,0 +1,48 @@
+defaults:
+  - override hydra/job_logging: none
+  - _self_
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+
+evaluation_root: evaluations
+
+# Locked scientific population inherited from 005 and 003.
+family: ilharco_timm_supervised
+model_name: vit_base_patch16_224.orig_in21k
+seed: 2038
+optim: adamw
+lr: 1.0e-5
+wd: 0.1
+ls: 0.0
+wl: 500
+max_grad_norm: 1.0
+batch_size: 128
+qat_bits: 3
+qat_granularity: channel
+qat_skip_modules: [head]
+ptq_bits: 3
+ptq_granularity: channel
+ptq_skip_modules: [head]
+vector_scope: quantized_linear_weight
+module_selector: apply_ptq_linear_v1
+accumulation_dtype: float64
+
+# Elected analyzer identity. Changing any item requires a new run-id election.
+curve_split: val
+curve_baseline: fp_ptq
+curve_grid: shared
+analysis_spec: qv_alignment_alpha_v1
+n_permutations: 10000
+permutation_seed: 2038
+
+unit_alpha: 1.0
+alpha_min: 0.0
+alpha_max: 1.5
+tie_tolerance: 1.0e-12
+
+alignment_path: evaluations/998_rebuttal/005_qv_alignment/euclidean_alignment/family=ilharco_timm_supervised/model_name=vit_base_patch16_224.orig_in21k/seed=2038/optim=adamw/lr=1e-05/wd=0.1/ls=0.0/wl=500/max_grad_norm=1.0/batch_size=128/qat_bits=3/qat_granularity=channel/qat_skip_modules=%5B%22head%22%5D/ptq_skip_modules=%5B%22head%22%5D/checkpoint_kind=classifier/epoch_policy=dataset_final/vector_scope=quantized_linear_weight/module_selector=apply_ptq_linear_v1/accumulation_dtype=float64/euclidean_alignment.json
+curve_path: evaluations/998_rebuttal/003_lambda_sensitivity/seed=2038/qat=bits=3_gran=channel/ptq=bits=3_gran=channel/split=val/baseline=fp_ptq/grid=shared/lambda_curves_ilharco_timm_supervised.json
+use_wandb: false

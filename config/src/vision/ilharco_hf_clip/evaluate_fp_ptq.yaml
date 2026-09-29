@@ -1,0 +1,25 @@
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  sweep:
+    dir: logs/config/experiments/vision/ilharco_hf_clip/000_baselines/evaluate_fp_ptq
+    subdir: ${model_name}/${dataset_name}/optim=adamw_lr=${lr}_wd=${wd}_ls=${ls}_wl=${wl}_mgn=${max_grad_norm}_bs=${batch_size}/seed=${seed}
+
+model_name: ???
+pretrained: ???
+dataset_name: ???
+batch_size: ???
+lr: ???
+wd: ???
+ls: ???
+wl: ???
+max_grad_norm: ???
+seed: ???
+limit_num_epochs: null
+limit_num_batches: null
+log_to_file: false
+
+ptq:
+  scope: ???        # list, e.g. [backbone_attn_block, classification_head]
+  bits: ???         # int
+  granularity: ???  # "tensor" or "channel"

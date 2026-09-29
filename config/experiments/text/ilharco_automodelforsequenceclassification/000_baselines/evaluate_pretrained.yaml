@@ -1,0 +1,26 @@
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  sweep:
+    dir: logs/config/experiments/text/ilharco_automodelforsequenceclassification/000_baselines/evaluate_pretrained
+    subdir: ${sanitize_hf:${model_name}}/${dataset_name}/seed=${seed}
+
+model_name: ???
+dataset_name: ???
+batch_size: ???
+max_length: ???
+seed: ???
+gpu: ???
+limit_num_batches: null
+log_to_file: false
+
+# Training hyperparameters used to locate the finetuned FP head checkpoint.
+lr: ???
+wd: ???
+ls: ???
+max_grad_norm: ???
+# Training-budget multiplier, matching the finetune run being evaluated.
+# 1.0 is the schedule this repo has always run.
+epoch_mult: 1.0
+
+limit_num_epochs: null

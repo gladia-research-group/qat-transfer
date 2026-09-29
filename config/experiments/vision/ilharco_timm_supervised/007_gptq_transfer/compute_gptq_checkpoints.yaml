@@ -1,0 +1,34 @@
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/config
+  sweep:
+    dir: logs/config/experiments/vision/ilharco_timm_supervised/007_gptq_transfer/compute_gptq_checkpoints
+    subdir: ${model_name}/seed=${seed}/gptq=bits=${gptq.bits}_gran=${gptq.granularity}_ncal=${gptq.num_calib_batches}
+
+model_name: ???
+dataset_names: ???       # list of dataset names to materialize GPTQ(FP) checkpoints for
+batch_size: ???
+seed: ???
+gpu: ???
+# Training-budget multiplier of the checkpoints being read.
+epoch_mult: 1.0
+
+limit_num_epochs: null   # null -> DATASET_NAME_TO_EPOCHS[dataset_name]
+skip_existing: true      # skip datasets whose GPTQ checkpoint already exists
+
+# Hyperparameters used to LOCATE the FP checkpoints.
+lr: ???
+wd: ???
+ls: ???
+wl: ???
+max_grad_norm: ???
+
+# GPTQ configuration; quantization knobs mandatory, calibration knobs may default.
+gptq:
+  skip_modules: ???        # list of child-module attribute names to exclude from GPTQ, e.g. [head]
+  bits: ???                # int
+  granularity: ???         # "tensor" or "channel"
+  num_calib_batches: 4     # batches from the dataset's own train split
+  percdamp: 0.01           # Hessian damping as a fraction of mean(diag(H))
+  actorder: false          # official --act-order (quantize columns by decreasing diag(H))
+  block_size: 128          # solver batching; result-invariant, NOT in the checkpoint path fragment

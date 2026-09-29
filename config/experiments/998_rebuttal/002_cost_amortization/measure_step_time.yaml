@@ -1,0 +1,38 @@
+model_name: ???
+dataset_name: ???
+seed: ???
+gpu: ???
+
+# Training hyperparameters — kept identical to
+# config/src/vision/ilharco_timm_supervised/finetune_qat.yaml so the measured
+# step is the step the real QAT runs execute.
+batch_size: 128
+lr: 1e-5
+wd: 0.1
+ls: 0.0
+wl: 500           # warmup length (steps)
+max_grad_norm: 1.0
+
+# Training-budget multiplier, mirroring finetune_qat.yaml. It does not change
+# what is timed -- only warmup_batches + timed_batches are ever executed -- but
+# it does change the scheduler length, and this block must keep matching the
+# real QAT runs or the measured step stops being the step they execute.
+epoch_mult: 1.0
+
+# Timing protocol
+warmup_batches: 10   # discarded: CUDA context init and kernel autotune
+timed_batches: 50    # summarized by the median (plus p25/p75, stdev)
+
+qat:
+  bits: ???           # int, required
+  granularity: ???    # "tensor" or "channel", required
+  skip_modules: ???   # list[str], required (e.g. [head])
+
+hydra:
+  searchpath:
+    - file://config
+  run:
+    dir: logs/experiments/998_rebuttal/002_cost_amortization/measure_step_time/${sanitize_timm:${model_name}}/${dataset_name}/seed=${seed}
+  sweep:
+    dir: logs/experiments/998_rebuttal/002_cost_amortization/measure_step_time
+    subdir: ${sanitize_timm:${model_name}}/${dataset_name}/seed=${seed}

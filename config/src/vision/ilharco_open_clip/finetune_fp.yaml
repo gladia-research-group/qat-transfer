@@ -1,0 +1,28 @@
+model_name: ???
+pretrained: ???
+dataset_name: ???
+seed: ???
+gpu: ???
+batch_size: 128
+lr: 1e-5
+wd: 0.1
+ls: 0.0
+wl: 500           # warmup length (steps)
+max_grad_norm: 1.0
+head_cache_dir: ${oc.env:HEAD_CACHE_DIR,heads}
+# Training-budget multiplier on this dataset's entry in DATASET_NAME_TO_EPOCHS.
+# 1.0 is the schedule this repo has always run. It is written explicitly into
+# every path as `mult=1`, never elided.
+epoch_mult: 1.0
+
+limit_num_batches: null
+limit_num_epochs: null
+
+hydra:
+  searchpath:
+    - file://config
+  run:
+    dir: logs/src/vision/ilharco_open_clip/finetune_fp/${sanitize_open_clip:${model_name},${pretrained}}/${dataset_name}/mult=${epoch_mult}/seed=${seed}
+  sweep:
+    dir: logs/src/vision/ilharco_open_clip/finetune_fp
+    subdir: ${sanitize_open_clip:${model_name},${pretrained}}/${dataset_name}/mult=${epoch_mult}/seed=${seed}
