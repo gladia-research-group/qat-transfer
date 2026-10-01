@@ -206,7 +206,7 @@ If you use this code, please cite:
   author    = {Solombrino, Daniele and Gargiulo, Antonio Andrea and Zirilli, Alessandro and Zhou, Luca and Minut, Adrian Robert and Rodol{\`a}, Emanuele},
   booktitle = {Advances in Neural Information Processing Systems},
   year      = {2026},
-  url       = {https://arxiv.org/abs/2604.03420}
+  url       = {https://openreview.net/forum?id=wrUEnnSgXa}
 }
 ```
 
