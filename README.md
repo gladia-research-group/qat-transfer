@@ -22,7 +22,27 @@ The repo covers vision (timm supervised ViT/DeiT/Swin, OpenCLIP, HF CLIP) and te
 
 ## Data and checkpoints
 
-This repository contains **code and configs only**. Datasets are downloaded through HuggingFace / torchvision into the caches configured in `.env`. Finetuned checkpoints (`storage/`) and evaluation outputs (`evaluations/`) are **not** included. The analysis (`code/experiments/998_rebuttal/`) and plotting (`code/visualizations/`, `visualizations/`) scripts read `evaluations/`, which is produced by running the finetuning, `000_baselines` and `001_qat_transfer` pipelines described in [`code/experiments/README.md`](code/experiments/README.md).
+Datasets are downloaded through HuggingFace / torchvision into the caches configured in `.env`. Evaluation outputs (`evaluations/`) are not included; they are produced by the finetuning, `000_baselines` and `001_qat_transfer` pipelines described in [`code/experiments/README.md`](code/experiments/README.md), and are what the analysis (`code/experiments/998_rebuttal/`) and plotting (`code/visualizations/`, `visualizations/`) scripts read.
+
+### Pretrained checkpoints
+
+The FP and 3-bit QAT finetunes behind the paper's results are on the HuggingFace Hub, one repository per model family:
+
+| Repository | Backbones | Size |
+|---|---|---|
+| [`gladia/qat-transfer-timm`](https://huggingface.co/gladia/qat-transfer-timm) | DeiT-III B/L, Swin B/L, ViT B/L/H (`orig_in21k`) on 22 vision tasks, plus 5 of the 22 PV-Tuning donors for ViT-B (see below) | 302 GB |
+| [`gladia/qat-transfer-open_clip`](https://huggingface.co/gladia/qat-transfer-open_clip) | OpenCLIP ViT-B/16, L/14, H/14 (LAION-2B) on 22 vision tasks, with their zero-shot heads | 180 GB |
+| [`gladia/qat-transfer-text`](https://huggingface.co/gladia/qat-transfer-text) | BERT-base/large, EmbeddingGemma-300M, Qwen3-Embedding-0.6B on 11 text tasks | 118 GB |
+
+Each repository mirrors the `storage/` layout the code expects, so downloading into `storage/` is enough to run every transfer and evaluation script without retraining:
+
+```
+uv run hf download gladia/qat-transfer-timm --local-dir storage
+```
+
+Add `--include "*/vit_base_patch16_224_orig_in21k/*"` (or any other sanitized model name) to fetch a single backbone. Then set `CHECKPOINT_BASE_PATH=storage/checkpoints` and `HEAD_BASE_PATH=storage/heads` in `.env`. Each repository's model card documents its contents, configuration and license; the text repository's EmbeddingGemma finetunes are distributed under the [Gemma Terms of Use](https://ai.google.dev/gemma/terms).
+
+The PV-Tuning donors of `008_pv_transfer` are incomplete: 17 of the 22 checkpoints were lost to a storage failure after the experiment ran, and only Cars, EuroSAT, Flowers102, RESISC45 and STL10 are released. The FP and QAT checkpoints are complete, and the missing PV donors can be regenerated with [`finetune_pv.py`](code/src/vision/ilharco_timm_supervised/finetune_pv.py) using the configuration in [`config/src/vision/ilharco_timm_supervised/finetune_pv.yaml`](config/src/vision/ilharco_timm_supervised/finetune_pv.yaml) (`delta=0.0`, `tau=0.01`, seed 2038).
 
 ## Experiment phases
 
@@ -122,7 +142,7 @@ qat-transfer/
   visualizations/     # Standalone plotting scripts for the 998_rebuttal QV-alignment analyses
   proofs/             # Lean formalizations of the paper's propositions
   evaluations/        # eval_results.json outputs         (created at runtime, not in git)
-  storage/            # Checkpoints and heads             (created at runtime, not in git)
+  storage/            # Checkpoints and heads             (download from the Hub or create by training; not in git)
   plots/              # Generated figures                 (created at runtime, not in git)
   logs/               # Hydra run/sweep logs              (created at runtime, not in git)
 ```
@@ -153,12 +173,14 @@ All sanitizers live in [code/src/vision/utils.py](code/src/vision/utils.py).
 
 **Checkpoint paths** (vision):
 ```
-{CHECKPOINT_BASE_PATH}/vision/{family}/{fp,qat}/{sanitized_model}/{dataset}/optim=adamw_lr={lr}_wd={wd}_ls={ls}_wl={wl}_mgn={max_grad_norm}_bs={batch_size}/mult={m}/[qat=bits={bits}_gran={granularity}_skip={skip_tag}/]seed={seed}/backbone_epoch_{N}.pt
+{CHECKPOINT_BASE_PATH}/vision/{family}/{fp,qat}/{sanitized_model}/{dataset}/optim=adamw_lr={lr}_wd={wd}_ls={ls}_wl={wl}_mgn={max_grad_norm}_bs={batch_size}/mult={m}/[qat=bits={bits}_gran={granularity}_skip={skip_tag}/]seed={seed}/{classifier_epoch_{N}.pt, head_epoch_{N}.pt}
 ```
+
+The timm families save the full classifier (`classifier_epoch_{N}.pt`) plus its head; the CLIP families (`ilharco_open_clip`, `ilharco_hf_clip`) save the image encoder alone as `epoch_{N}.pt`, with the zero-shot head under `{HEAD_BASE_PATH}/vision/{family}/{sanitized_model}/head_{dataset}.pt`.
 
 **Checkpoint paths** (text): same structure but the optim fragment uses `_ml={max_length}` instead of `_wl={wl}`:
 ```
-{CHECKPOINT_BASE_PATH}/text/{family}/{fp,qat}/{sanitized_model}/{dataset}/optim=adamw_lr={lr}_wd={wd}_ls={ls}_mgn={max_grad_norm}_bs={batch_size}_ml={max_length}/mult={m}/[qat=bits={bits}_gran={granularity}_skip={skip_tag}/]seed={seed}/backbone_epoch_{N}.pt
+{CHECKPOINT_BASE_PATH}/text/{family}/{fp,qat}/{sanitized_model}/{dataset}/optim=adamw_lr={lr}_wd={wd}_ls={ls}_mgn={max_grad_norm}_bs={batch_size}_ml={max_length}/mult={m}/[qat=bits={bits}_gran={granularity}_skip={skip_tag}/]seed={seed}/{backbone_epoch_{N}.pt, head_epoch_{N}.pt}
 ```
 
 **Evaluation paths**:
