@@ -30,7 +30,7 @@ The FP and 3-bit QAT finetunes behind the paper's results are on the HuggingFace
 
 | Repository | Backbones | Size |
 |---|---|---|
-| [`gladia/qat-transfer-timm`](https://huggingface.co/gladia/qat-transfer-timm) | DeiT-III B/L, Swin B/L, ViT B/L/H (`orig_in21k`) on 22 vision tasks, plus PV-Tuning donors for ViT-B | 302 GB |
+| [`gladia/qat-transfer-timm`](https://huggingface.co/gladia/qat-transfer-timm) | DeiT-III B/L, Swin B/L, ViT B/L/H (`orig_in21k`) on 22 vision tasks, plus 5 of the 22 PV-Tuning donors for ViT-B (see below) | 302 GB |
 | [`gladia/qat-transfer-open_clip`](https://huggingface.co/gladia/qat-transfer-open_clip) | OpenCLIP ViT-B/16, L/14, H/14 (LAION-2B) on 22 vision tasks, with their zero-shot heads | 180 GB |
 | [`gladia/qat-transfer-text`](https://huggingface.co/gladia/qat-transfer-text) | BERT-base/large, EmbeddingGemma-300M, Qwen3-Embedding-0.6B on 11 text tasks | 118 GB |
 
@@ -41,6 +41,8 @@ uv run hf download gladia/qat-transfer-timm --local-dir storage
 ```
 
 Add `--include "*/vit_base_patch16_224_orig_in21k/*"` (or any other sanitized model name) to fetch a single backbone. Then set `CHECKPOINT_BASE_PATH=storage/checkpoints` and `HEAD_BASE_PATH=storage/heads` in `.env`. Each repository's model card documents its contents, configuration and license; the text repository's EmbeddingGemma finetunes are distributed under the [Gemma Terms of Use](https://ai.google.dev/gemma/terms).
+
+The PV-Tuning donors of `008_pv_transfer` are incomplete: 17 of the 22 checkpoints were lost to a storage failure after the experiment ran, and only Cars, EuroSAT, Flowers102, RESISC45 and STL10 are released. The FP and QAT checkpoints are complete, and the missing PV donors can be regenerated with [`finetune_pv.py`](code/src/vision/ilharco_timm_supervised/finetune_pv.py) using the configuration in [`config/src/vision/ilharco_timm_supervised/finetune_pv.yaml`](config/src/vision/ilharco_timm_supervised/finetune_pv.yaml) (`delta=0.0`, `tau=0.01`, seed 2038).
 
 ## Experiment phases
 
