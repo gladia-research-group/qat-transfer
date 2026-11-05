@@ -4,7 +4,7 @@ Official code for **Zero-Shot Quantization via Weight-Space Arithmetic** (NeurIP
 
 Daniele Solombrino, Antonio Andrea Gargiulo, Alessandro Zirilli, Luca Zhou, Adrian Robert Minut, Emanuele Rodolà
 
-[arXiv](https://arxiv.org/abs/2604.03420) · [OpenReview](https://openreview.net/forum?id=wrUEnnSgXa) · [Research graph](https://flywheel.paradigma.inc/node/de486ca0-8e83-4041-bbf6-0b0be565435b) · 🤗 Checkpoints: [timm](https://huggingface.co/gladia/qat-transfer-timm), [OpenCLIP](https://huggingface.co/gladia/qat-transfer-open_clip), [text](https://huggingface.co/gladia/qat-transfer-text)
+[arXiv](https://arxiv.org/abs/2604.03420) · [OpenReview](https://openreview.net/forum?id=wrUEnnSgXa) · [Research graph](https://flywheel.paradigma.inc/node/de486ca0-8e83-4041-bbf6-0b0be565435b) · 🤗 Checkpoints: [timm](https://huggingface.co/gladia/qat-transfer-timm), [OpenCLIP](https://huggingface.co/gladia/qat-transfer-open_clip), [text](https://huggingface.co/gladia/qat-transfer-text), [VAE](https://huggingface.co/gladia/qat-transfer-vae), [staged QAT/QAD](https://huggingface.co/gladia/qat-transfer-timm/tree/main/checkpoints/000_finetune/000_vision/000_timm)
 
 > We show that robustness to post-training quantization (PTQ) is a transferable direction in weight space. We call this direction the quantization vector: extracted from a donor task by simple weight-space arithmetic, it can be used to patch a receiver model and improve post-PTQ Top-1 accuracy by up to 60 points in a 3-bit setting, without receiver-side quantization-aware training (QAT). Because the method requires no receiver training data, it provides a zero-shot, low-cost alternative to QAT for extremely low-bit deployment. Across four ViT scales and 22 image classification tasks, donor quantization vectors often yield substantial gains even when donor and receiver tasks differ markedly. We further prove rigorously that quantization vectors are well-defined and do not suffer from reparameterization symmetries, and provide a local geometric account of their effect. Together, these results suggest that quantization robustness can be partially isolated, reused, and transferred through simple weight-space algebra.
 
@@ -30,9 +30,10 @@ The FP and 3-bit QAT finetunes behind the paper's results are on the HuggingFace
 
 | Repository | Backbones | Size |
 |---|---|---|
-| [`gladia/qat-transfer-timm`](https://huggingface.co/gladia/qat-transfer-timm) | DeiT-III B/L, Swin B/L, ViT B/L/H (`orig_in21k`) on 22 vision tasks, plus 5 of the 22 PV-Tuning donors for ViT-B (see below) | 302 GB |
+| [`gladia/qat-transfer-timm`](https://huggingface.co/gladia/qat-transfer-timm) | DeiT-III B/L, Swin B/L, ViT B/L/H (`orig_in21k`) on 22 vision tasks, plus 5 of the 22 PV-Tuning donors for ViT-B and the staged QAT/QAD ViT-B/16 donors (see below) | 370 GB |
 | [`gladia/qat-transfer-open_clip`](https://huggingface.co/gladia/qat-transfer-open_clip) | OpenCLIP ViT-B/16, L/14, H/14 (LAION-2B) on 22 vision tasks, with their zero-shot heads | 180 GB |
 | [`gladia/qat-transfer-text`](https://huggingface.co/gladia/qat-transfer-text) | BERT-base/large, EmbeddingGemma-300M, Qwen3-Embedding-0.6B on 11 text tasks | 118 GB |
+| [`gladia/qat-transfer-vae`](https://huggingface.co/gladia/qat-transfer-vae) | Stable Diffusion KL-f8 VAE decoders on 12 image domains: FP, plus QAT and QAD at int3 and fp4 (per-channel and NVFP4) | 17 GB |
 
 Each repository mirrors the `storage/` layout the code expects, so downloading into `storage/` is enough to run every transfer and evaluation script without retraining:
 
@@ -41,6 +42,8 @@ uv run hf download gladia/qat-transfer-timm --local-dir storage
 ```
 
 Add `--include "*/vit_base_patch16_224_orig_in21k/*"` (or any other sanitized model name) to fetch a single backbone. Then set `CHECKPOINT_BASE_PATH=storage/checkpoints` and `HEAD_BASE_PATH=storage/heads` in `.env`. Each repository's model card documents its contents, configuration and license; the text repository's EmbeddingGemma finetunes are distributed under the [Gemma Terms of Use](https://ai.google.dev/gemma/terms).
+
+The checkpoints of the appendix's *Further Variants of QV Transfer* were produced by a newer version of the code and use its own layout, documented in each model card: the staged-schedule QAT and QAD donors for ViT-B/16 (FP endpoints, QA started at 30/60/90% of the FP run, and same-budget QA from the pretrained backbone, 198 runs) are under [`checkpoints/000_finetune/` in `gladia/qat-transfer-timm`](https://huggingface.co/gladia/qat-transfer-timm/tree/main/checkpoints/000_finetune/000_vision/000_timm), and the VAE decoders are in [`gladia/qat-transfer-vae`](https://huggingface.co/gladia/qat-transfer-vae).
 
 The PV-Tuning donors of `008_pv_transfer` are incomplete: 17 of the 22 checkpoints were lost to a storage failure after the experiment ran, and only Cars, EuroSAT, Flowers102, RESISC45 and STL10 are released. The FP and QAT checkpoints are complete, and the missing PV donors can be regenerated with [`finetune_pv.py`](code/src/vision/ilharco_timm_supervised/finetune_pv.py) using the configuration in [`config/src/vision/ilharco_timm_supervised/finetune_pv.yaml`](config/src/vision/ilharco_timm_supervised/finetune_pv.yaml) (`delta=0.0`, `tau=0.01`, seed 2038).
 
